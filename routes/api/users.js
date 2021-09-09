@@ -147,6 +147,8 @@ router.post("/register", (req, res) => {
   });
 });
 
+// TODO: Implement Change User Password
+
 /**
  * @route  POST api/users/admin
  * @desc   Register a new admin

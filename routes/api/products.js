@@ -57,7 +57,7 @@ router.post("/product", authorizeAdmin, (req, res) => {
  */
 router.put("/product", authorizeAdmin, (req, res) => {
   // Get the product from request
-  const { _id, name, description, cost, stock, discount } = req.body;
+  const { _id, name, description, capital, profit, stock, discount } = req.body;
 
   // Find the product by id and update it
   Product.findByIdAndUpdate(
@@ -65,7 +65,8 @@ router.put("/product", authorizeAdmin, (req, res) => {
     {
       name: name,
       description: description,
-      cost: cost,
+      capital: capital,
+      profit: profit,
       stock: stock,
       discount: discount,
       date_updated: Date.now(),

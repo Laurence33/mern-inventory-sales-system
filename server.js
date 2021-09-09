@@ -2,9 +2,17 @@ const express = require("express");
 const mongoose = require("mongoose");
 const config = require("config");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
 const app = express();
 
+// To be able to accept cors requests
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 // To be able to parse json body
 app.use(express.json());
 // To be able to work with cookies
@@ -54,13 +62,11 @@ app.get("/", (req, res) => {
  * @response JSON containing some details about the developer
  */
 app.get("/developer", (req, res) => {
-  res
-    .status(200)
-    .json({
-      developedBy: "Laurence N. Cortez",
-      month: "August, 2021",
-      facebook: "www.facebook.com/laurence.cortez19",
-    });
+  res.status(200).json({
+    developedBy: "Laurence N. Cortez",
+    month: "August, 2021",
+    facebook: "www.facebook.com/laurence.cortez19",
+  });
 });
 
 // Get port from env and set a default port
