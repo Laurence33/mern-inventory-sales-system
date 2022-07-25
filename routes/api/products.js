@@ -5,6 +5,7 @@ const { authorizeAdmin } = require("../../middleware/auth");
 
 // Import Product model
 const Product = require("../../models/Product");
+const Stock = require("../../models/Stock");
 
 // Initialize the Express Router
 const router = express.Router();
@@ -26,7 +27,94 @@ router.get("/", (req, res) => {
   });
 });
 
+router.get("/stock-history", authorizeAdmin, (req, res) => {
+  Stock.find({})
+    .sort({ date: -1 })
+    .then((stocks) => {
+      return res.status(200).json(stocks);
+    })
+    .catch((err) => {
+      return res
+        .status(400)
+        .json({ message: "Something went wrong, please try again." });
+    });
+});
+
 /**
+ * @route POST /api/products/stock
+ * @desc Adding a new product/stock and recording changes on stock collection
+ * @access Private
+ * @response  JSON, New Product object with ID (if new item) and new number of stocks
+ */
+router.post("/stock", authorizeAdmin, (req, res) => {
+  // Get the product on the body
+  const item = req.body;
+
+  // function to save to stock history
+  const saveStockHistory = async (stock, count) => {
+    // Record the transaction on stock
+    const newStock = new Stock({
+      product_id: stock.id,
+      product_name: stock.name,
+      new_stock: count,
+      total_stock: stock.stock,
+    });
+
+    // Try save the stock
+    await newStock.save().then((stock) => {
+      if (stock) {
+        // Success
+      }
+    });
+  };
+
+  // If the object have id, use findByIdAndUpdate()
+  if (item.hasOwnProperty("id")) {
+    // Update product
+    Product.findByIdAndUpdate(
+      item.id,
+      {
+        $inc: { stock: item.stock },
+        date_modified: Date.now,
+      },
+      { new: true },
+      (err, newProduct, r) => {
+        // There's an error
+        if (err) {
+          return res
+            .status(500)
+            .json({ message: "Something went wrong, please try again." });
+        }
+        if (newProduct) {
+          // Save to history
+          saveStockHistory(newProduct, item.stock);
+          // Everything is successful
+          return res.status(200).json(newProduct);
+        }
+      }
+    );
+    // Else, create a new product using newProduct.save()
+  } else {
+    // Save new product
+    console.log("Saving new product...");
+    const newDoc = new Product(item);
+    newDoc.save().then((newProduct) => {
+      // There's an error
+      if (!newProduct) {
+        return res
+          .status(500)
+          .json({ message: "Something went wrong, please try again." });
+      }
+      // Save to history
+      saveStockHistory(newProduct, item.stock);
+      // Everything is successful
+      return res.status(200).json(newProduct);
+    });
+  }
+});
+
+/**
+ * ! This is not to be used
  * @route POST /api/products/product
  * @desc Add a new product
  * @access Private
@@ -52,7 +140,7 @@ router.post("/product", authorizeAdmin, (req, res) => {
 /**
  * @route PUT /api/products/product
  * @desc Modifies an existing product
- * @access Private
+ * @access Private - Admin
  * @response JSON, Product object with id
  */
 router.put("/product", authorizeAdmin, (req, res) => {
@@ -89,6 +177,7 @@ router.put("/product", authorizeAdmin, (req, res) => {
 });
 
 /**
+ * ? Should I remove this one?
  * @route DELETE /api/products/product
  * @desc Delete an existing product
  * @access Private

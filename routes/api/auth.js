@@ -112,7 +112,7 @@ router.post("/refresh", (req, res) => {
 });
 
 /**
- * @route DELETE /api/auth
+ * @route DELETE /api/auth/logout
  * @desc  Logout a user/admin, removes refresh token from cookie
  * @access Private
  * @response 204 No Content
@@ -205,26 +205,34 @@ router.get("/admin", (req, res) => {
       // If token is not valid
       if (err) return res.sendStatus(403).json({ message: "Invalid token." });
 
-      Admin.findById(admin.id).then((admin) => {
-        // Admin might be deleted
-        if (!admin)
-          return res.status(401).json({ message: "Admin account not found." });
+      Admin.findById(admin.id)
+        .then((admin) => {
+          // Admin might be deleted
+          if (!admin)
+            return res
+              .status(401)
+              .json({ message: "Admin account not found." });
 
-        const adminNew = {
-          username: admin.username,
-          id: admin.id,
-        };
+          const adminNew = {
+            username: admin.username,
+            id: admin.id,
+          };
 
-        const newAccessToken = generateAccessToken(adminNew);
-        if (!newAccessToken)
-          return res.status(500).json({
-            message: "We cannot log you in securely, please try again",
-          });
+          const newAccessToken = generateAccessToken(adminNew);
+          if (!newAccessToken)
+            return res.status(500).json({
+              message: "We cannot log you in securely, please try again",
+            });
 
-        return res
-          .status(200)
-          .json({ accessToken: newAccessToken, admin: adminNew });
-      });
+          return res
+            .status(200)
+            .json({ accessToken: newAccessToken, admin: adminNew });
+        })
+        .catch((err) => {
+          return res
+            .status(500)
+            .json({ message: "Something went wrong please try again." });
+        });
     }
   );
 });

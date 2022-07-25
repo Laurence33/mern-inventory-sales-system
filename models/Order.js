@@ -1,32 +1,14 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-// Create product schema for order
-const OrderProductSchema = new Schema({
-  id: {
-    type: mongoose.SchemaTypes.ObjectId,
-    required: true,
-    unique: true,
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  cost: {
-    type: Number,
-    required: true,
-  },
-  quantity: {
-    type: Number,
-    required: true,
-  },
-});
-
 // Create Order Schema
 const OrderSchema = new Schema({
-  user: {
+  user_id: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: "user",
+  },
+  customer_name: {
+    type: String,
     required: true,
   },
   date_ordered: {

@@ -15,6 +15,41 @@ function authorize(req, res, next) {
     // Verify token
     const decoded = jwt.verify(token, config.get("ACCESS_TOKEN_SECRET"));
 
+    if (decoded.username) {
+      // Request is from admin
+      const adminInfo = {
+        username: decoded.username,
+        id: decoded.id,
+      };
+      req.admin = adminInfo;
+      return next(); // Return and go to the next function
+    }
+    // If request is from a User
+    const userInfo = {
+      name: decoded.name,
+      email: decoded.email,
+      id: decoded.id,
+    };
+    // Add user to payload
+    req.user = userInfo;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+}
+
+function authorizeUser(req, res, next) {
+  // Get token from  header
+  const token = req.header("x-auth-token");
+
+  // Check if token exists
+  if (!token)
+    return res.status(401).json({ message: "No token, unauthorized." });
+
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, config.get("ACCESS_TOKEN_SECRET"));
+
     // Parse the user
     const userInfo = {
       name: decoded.name,
@@ -72,6 +107,7 @@ function generateRefreshToken(user) {
 
 module.exports = {
   authorize,
+  authorizeUser,
   authorizeAdmin,
   generateAccessToken,
   generateRefreshToken,

@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 
 // Import middleware for authorization
 const auth = require("../../middleware/auth");
-const { authorize, generateAccessToken } = auth;
+const { authorizeUser, generateAccessToken } = auth;
 
 // Import the User Model
 const User = require("../../models/User");
@@ -19,10 +19,10 @@ router.get("/", (req, res) => {
 /**
  * @route  POST api/users/email
  * @desc   Change user email
- * @access Private
+ * @access Private - User
  * @response JSON with a message and user
  */
-router.post("/email", authorize, (req, res) => {
+router.post("/email", authorizeUser, (req, res) => {
   const user = req.user;
   const newEmail = req.body.email;
 
@@ -50,10 +50,10 @@ router.post("/email", authorize, (req, res) => {
 /**
  * @route  POST api/users/update
  * @desc   Change account details
- * @access Private
+ * @access Private - User
  * @response JSON with a message and user
  */
-router.post("/update", authorize, (req, res) => {
+router.post("/update", authorizeUser, (req, res) => {
   const user = req.user;
   const newDetails = req.body;
 
@@ -83,10 +83,10 @@ router.post("/update", authorize, (req, res) => {
 /**
  * @route  GET api/users/user
  * @desc   Get user info
- * @access Private
+ * @access Private - User
  * @response JSON with a message and user
  */
-router.get("/user", authorize, (req, res) => {
+router.get("/user", authorizeUser, (req, res) => {
   const user = req.user;
   User.findById(user.id).then((user) => {
     // User might be deleted
